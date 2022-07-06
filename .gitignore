@@ -1,0 +1,5 @@
+*old/
+checkpoints/
+*.ckpt
+dataset_CARLA_challenge_autopilot/
+
