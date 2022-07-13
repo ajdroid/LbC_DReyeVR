@@ -44,7 +44,8 @@ def get_weights(data, key='speed', bins=4):
     return class_weights[classes]
 
 
-def get_dataset(dataset_dir, is_train=True, batch_size=128, num_workers=4, sample_by='none', **kwargs):
+def get_dataset(dataset_dir, is_train=True, batch_size=128,
+                 num_workers=4, sample_by='none', **kwargs):
     data = list()
     transform = transforms.Compose([
         get_augmenter() if is_train else lambda x: x,
@@ -52,6 +53,8 @@ def get_dataset(dataset_dir, is_train=True, batch_size=128, num_workers=4, sampl
         ])
 
     episodes = list(sorted(Path(dataset_dir).glob('*')))
+    sample_weights = []
+    data_is_OG = []
 
     for i, _dataset_dir in enumerate(episodes):
         add = False
@@ -60,10 +63,37 @@ def get_dataset(dataset_dir, is_train=True, batch_size=128, num_workers=4, sampl
 
         if add:
             data.append(CarlaDataset(_dataset_dir, transform, **kwargs))
+            # gotta sample 50-50 from OG dataset and replay dataset
+            if sample_by == "finetune": 
+                if "exp" in str(_dataset_dir): # this is a dreyevr replay dataset
+                    data_is_OG.append(False)
+                    sample_weights += [0 for _ in range(len(data[-1]))] # 'replay'
+                else:
+                    data_is_OG.append(True)
+                    sample_weights += [1 for _ in range(len(data[-1]))] # 'LBCOG'        
 
     print('%d frames.' % sum(map(len, data)))
+    # import ipdb; ipdb.set_trace()
 
-    weights = torch.DoubleTensor(get_weights(data, key=sample_by))
+    if sample_by == "finetune":
+        if is_train:
+            # first even sample in the two datasets
+            hmd_data = [ep_data for isOG, ep_data in zip(data_is_OG, data) if not isOG]
+            hmd_weights = get_weights(hmd_data, key="even")
+            hmd_weights /= hmd_weights.sum()
+
+            og_data = [ep_data for isOG, ep_data in zip(data_is_OG, data) if isOG]
+            og_weights = get_weights(og_data, key="even")
+            og_weights /= og_weights.sum()
+
+            # HACK: this concat doesn't work if the sorting in line 55 doesn't exist
+            # hmd data dirs start with "exp" and OGs with "route"
+            weights = np.hstack([hmd_weights, og_weights])
+        elif sample_by == "finetune" and not is_train:
+            weights = torch.DoubleTensor(get_weights(data, key="even"))
+    else:
+        weights = torch.DoubleTensor(get_weights(data, key=sample_by))
+
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights))
     data = torch.utils.data.ConcatDataset(data)
 
@@ -148,11 +178,7 @@ class CarlaDataset(Dataset):
             # what you're trying to check is that we have the same number
             # of images and measurements -- OG check works if you start 0 indexed
             # assert (int(frame) < len(self.measurements))
-            assert (int(frame) < len(self.measurements)) + 1 
-            # if (int(frame) < len(self.measurements)):
-            #     pass
-            # else:
-            #     import ipdb; ipdb.set_trace()
+            assert (int(frame) < len(self.measurements) + 1)
 
             self.frames.append(frame)
 

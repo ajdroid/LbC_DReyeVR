@@ -5,7 +5,9 @@ export ROUTES=leaderboard/data/route11.xml   # change to desired route
 # export ROUTES=leaderboard/data/routes_training/route_19.xml   # change to desired route
 export TEAM_AGENT=image_agent.py  # no need to change
 # export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/lbc_dreyevr_firstpass_img/epoch=30.ckpt  # change path to checkpoint
-export TEAM_CONFIG=/scratch/abhijatb/Bosch22/2020_CARLA_challenge/epoch_24.ckpt  # change path to checkpoint
+# export TEAM_CONFIG=/scratch/abhijatb/Bosch22/2020_CARLA_challenge/epoch_24.ckpt  # change path to checkpoint
+# export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/nogpsjitter_imgmodel_19trainseqs/epoch\=93.ckpt  # change path to checkpoint
+export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/nogpsjitter_imgmodel_19trainseqs_CC-2/epoch\=73.ckpt
 # export TEAM_AGENT=map_agent.py  # no need to change
 # export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/lbc_dreyevr_firstpass_map/epoch=41.ckpt  # change path to checkpoint
 export HAS_DISPLAY=1  # set to 0 if you don't want a debug window

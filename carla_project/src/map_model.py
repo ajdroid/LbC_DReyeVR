@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser.add_argument('--id', type=str, default=uuid.uuid4().hex)
 
     parser.add_argument('--heatmap_radius', type=int, default=5)
-    parser.add_argument('--sample_by', type=str, choices=['none', 'even', 'speed', 'steer'], default='even')
+    parser.add_argument('--sample_by', type=str, choices=['none', 'even', 'speed', 'steer', 'finetune'], default='even')
     parser.add_argument('--command_coefficient', type=float, default=0.1)
     parser.add_argument('--temperature', type=float, default=10.0)
     parser.add_argument('--hack', action='store_true', default=False)

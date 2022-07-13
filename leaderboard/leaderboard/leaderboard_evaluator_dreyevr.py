@@ -321,7 +321,7 @@ class LeaderboardEvaluator(object):
         try:
             # this sets synchronous mode within which is great
             self._load_and_wait_for_world(args, config.town, config.ego_vehicles)
-            # TODO : this needs to change to an assignment -- no loading
+            # TODO : this needs to change to an assignment -- no loading            
             # self._prepare_ego_vehicles(config.ego_vehicles, False)            
             self._set_dreyevr_ego_vehicle()
             scenario = RouteScenario(world=self.world, config=config, debug_mode=args.debug)

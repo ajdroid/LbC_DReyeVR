@@ -188,11 +188,10 @@ class ScenarioManager(object):
             if self.scenario_tree.status != py_trees.common.Status.RUNNING:
                 self._running = False
 
-            ego_trans = self.ego_vehicles[0].get_transform()
-            # TODO: this is happening because it 
+            # ego_trans = self.ego_vehicles[0].get_transform()
             # self._spectator.set_transform(carla.Transform(ego_trans.location + carla.Location(z=50),
             #                                               carla.Rotation(pitch=-90))
-            print("ego rotation: ", ego_trans.rotation)            
+            # print("ego rotation: ", ego_trans.rotation)            
 
         if self._running and self.get_running_status():
             CarlaDataProvider.get_world().tick(self._timeout)
