@@ -5,12 +5,12 @@ export ROUTES=leaderboard/data/route11.xml   # change to desired route
 # export ROUTES=leaderboard/data/routes_training/route_19.xml   # change to desired route
 export TEAM_AGENT=image_agent.py  # no need to change
 # export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/lbc_dreyevr_firstpass_img/epoch=30.ckpt  # change path to checkpoint
-# export TEAM_CONFIG=/scratch/abhijatb/Bosch22/2020_CARLA_challenge/epoch_24.ckpt  # change path to checkpoint
-# export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/nogpsjitter_imgmodel_19trainseqs/epoch\=93.ckpt  # change path to checkpoint
-export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/nogpsjitter_imgmodel_19trainseqs_CC-2/epoch\=73.ckpt
+export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/pre_trained/epoch_24.ckpt  # change path to   # change path to checkpoint
+# export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/imgmodel_17trainseqs_CC-1_LR-4_FT/epoch\=27.ckpt   
 # export TEAM_AGENT=map_agent.py  # no need to change
 # export TEAM_CONFIG=/scratch/abhijatb/Bosch22/LbC_DReyeVR/checkpoints/lbc_dreyevr_firstpass_map/epoch=41.ckpt  # change path to checkpoint
 export HAS_DISPLAY=1  # set to 0 if you don't want a debug window
+export SAVE_INTDATA=1
 SCENARIO_FILE=leaderboard/data/dreyevr/periph_study_scenarios.json
 
 export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla

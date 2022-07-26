@@ -111,6 +111,22 @@ class ImageModel(pl.LightningModule):
 
         return out, (target_cam, target_heatmap_cam)
 
+    def target_to_target_heatmap(self, img, target):
+        target_cam = self.converter.map_to_cam(target)
+        target_heatmap_cam = self.to_heatmap(target, img)[:, None]
+        return target_heatmap_cam
+
+    def forward_w_logit(self, img, target):
+        target_cam = self.converter.map_to_cam(target)
+        target_heatmap_cam = self.to_heatmap(target, img)[:, None]
+        out, logits = self.net(torch.cat((img, target_heatmap_cam), 1), True)
+
+        return out, (target_cam, target_heatmap_cam), logits
+
+    def forward_img_heatmap_logit(self, img, target_heatmap_cam):
+        out, logits = self.net(torch.cat((img, target_heatmap_cam), 1), True)
+        return out, logits
+
     @torch.no_grad()
     def _get_labels(self, topdown, target):
         out, (target_heatmap,) = self.teacher.forward(topdown, target, debug=True)

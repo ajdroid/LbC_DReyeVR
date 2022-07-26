@@ -2,4 +2,5 @@
 checkpoints/
 *.ckpt
 dataset_CARLA_challenge_autopilot/
+saliency_movies/
 

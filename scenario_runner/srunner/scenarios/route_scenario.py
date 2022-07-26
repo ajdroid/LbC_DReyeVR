@@ -519,9 +519,9 @@ class RouteScenario(BasicScenario):
 
         # Create the background activity of the route
         town_amount = {
-            'Town01': 120,
+            'Town01': 0,
             'Town02': 0,
-            'Town03': 10,
+            'Town03': 0,
             'Town04': 50,
             'Town05': 0,
             'Town06': 50,

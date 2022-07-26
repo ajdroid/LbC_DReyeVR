@@ -13,8 +13,11 @@ from carla_project.src.converter import Converter
 from team_code.base_agent import BaseAgent
 from team_code.pid_controller import PIDController
 
+import datetime
+import pathlib
 
 DEBUG = int(os.environ.get('HAS_DISPLAY', 0))
+SAVE_INTDATA = int(os.environ.get('HAS_DISPLAY', 0))
 
 
 def get_entry_point():
@@ -47,6 +50,23 @@ def debug_display(tick_data, target_cam, out, steer, throttle, brake, desired_sp
 class ImageAgent(BaseAgent):
     def setup(self, path_to_conf_file):
         super().setup(path_to_conf_file)
+        self.save_path = None
+
+        if path_to_conf_file and SAVE_INTDATA:
+            now = datetime.datetime.now()
+            string = pathlib.Path(os.environ['ROUTES']).stem + '_'
+            string += '_'.join(map(lambda x: '%02d' % x, (now.month, now.day, now.hour, now.minute, now.second)))
+
+            print(string)
+
+            self.save_path = pathlib.Path(path_to_conf_file).parents[0] / string
+            self.save_path.mkdir(exist_ok=False)
+
+            (self.save_path / 'rgb').mkdir()
+            (self.save_path / 'rgb_left').mkdir()
+            (self.save_path / 'rgb_right').mkdir()
+            (self.save_path / 'topdown').mkdir()
+            (self.save_path / 'measurements').mkdir()
 
         self.converter = Converter()
         self.net = ImageModel.load_from_checkpoint(path_to_conf_file)
@@ -81,6 +101,35 @@ class ImageAgent(BaseAgent):
         result['target'] = target
 
         return result
+    
+    def save(self, steer, throttle, brake, target_speed, tick_data):
+        # some of this stuff is saved to check that forwarding the network
+        #  offline produces the same results
+        frame = self.step // 10
+
+        pos = self._get_position(tick_data)
+        theta = tick_data['compass']
+        speed = tick_data['speed']
+
+        data = {
+                'x': pos[0],
+                'y': pos[1],
+                'theta': theta,
+                'speed': speed,
+                'target_x': tick_data['target'][0],
+                'target_y': tick_data['target'][1],
+                'steer': steer,
+                'throttle': throttle,
+                'brake': brake,
+                }
+
+        (self.save_path / 'measurements' / ('%04d.json' % frame)).write_text(str(data))
+
+        Image.fromarray(tick_data['rgb']).save(self.save_path / 'rgb' / ('%04d.png' % frame))
+        Image.fromarray(tick_data['rgb_left']).save(self.save_path / 'rgb_left' / ('%04d.png' % frame))
+        Image.fromarray(tick_data['rgb_right']).save(self.save_path / 'rgb_right' / ('%04d.png' % frame))
+        
+        return
 
     @torch.no_grad()
     def run_step_using_learned_controller(self, input_data, timestamp):
@@ -170,5 +219,35 @@ class ImageAgent(BaseAgent):
                     steer, throttle, brake, desired_speed,
                     self.step)
 
+        if self.step % 10 == 0 and SAVE_INTDATA:
+            self.save(steer, throttle, brake, desired_speed, tick_data)
+
         return control
 
+    def offline_tick(self, input_data):
+        # result = super().tick(input_data)
+        result = input_data
+        result['image'] = np.concatenate(tuple(np.array(result[x]) for x in ['rgb', 'rgb_left', 'rgb_right']), -1)
+
+        theta = result['theta']
+        theta = 0.0 if np.isnan(theta) else theta
+        theta = theta + np.pi / 2
+        R = np.array([
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta),  np.cos(theta)],
+            ])
+        
+        # get cmd heatmap from stored data instead of from planner        
+        try:
+            far_node = np.array([input_data['x_command'], input_data['y_command']])
+            gps = np.array([input_data['x'], input_data['y']])
+            target = R.T.dot(far_node - gps)
+            target *= 5.5
+            target += [128, 256]
+            target = np.clip(target, 0, 256)
+
+            result['target'] = target
+        except KeyError: # this happens if this was from online model data
+            result['target'] = np.array([input_data['target_x'], input_data['target_y']])
+
+        return result

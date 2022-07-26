@@ -95,13 +95,12 @@ class SpeedometerReader(BaseReader):
 
     def _get_forward_speed(self, transform=None, velocity=None):
         """ Convert the vehicle transform directly to forward speed """
-        if not velocity:
+        if not velocity:            
             velocity = self._vehicle.get_velocity()            
         if not transform:
             transform = self._vehicle.get_transform()
 
-        vel_np = np.array([velocity.x, velocity.y, velocity.z])
-        # print("Vel np", vel_np)
+        vel_np = np.array([velocity.x, velocity.y, velocity.z])        
         pitch = np.deg2rad(transform.rotation.pitch)
         yaw = np.deg2rad(transform.rotation.yaw)
         orientation = np.array([np.cos(pitch) * np.cos(yaw), np.cos(pitch) * np.sin(yaw), np.sin(pitch)])
